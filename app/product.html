@@ -1,0 +1,245 @@
+<!DOCTYPE HTML>
+<head>
+<title>Bigshot | Contact</title>
+
+<meta charset="utf-8">
+<!-- CSS Files -->
+<link rel="stylesheet" type="text/css" media="screen" href="css/style.css">
+<link rel="stylesheet" type="text/css" media="screen" href="menu/css/simple_menu.css">
+<link rel="stylesheet" href="css/nivo-slider.css" type="text/css" media="screen">
+<link rel="stylesheet" href="admin/css/materialize.css">
+<!-- JS Files -->
+<script src="js/jquery.min.js"></script>
+<script src="admin/js/materialize.js"></script>
+    
+</head>
+<body>
+<div class="header">
+  <!-- Logo/Title -->
+  <div id="site_title"><a href="index.html"> <img src="img/logo.png" alt=""></a> </div>
+  <!-- Main Menu -->
+  <ol id="menu">
+    <li><a href="index.html">Home</a></li>
+	 <li><a href="product.html">Pesan Product</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ol>
+</div>
+<!-- END header -->
+<div id="container">
+  
+    <meta charset='utf-8'/>
+    <style type='text/css'>     
+        #pesan {
+            border: 1px dashed #eee; padding: 10px;
+            color: #808080; font-family: monospace;
+        }
+    </style>
+    
+</head>
+<body>
+  <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo center">PEMESANAN PRODUK </a>
+      <ul id="nav-mobile" class="left hide-on-med-and-down">
+      </ul>
+    </div>
+  </nav>
+  <div class="container">
+   <div id="basic-form" class="section">
+            <div class="row">
+              <div class="col s12 m12 l5">
+                <div class="card-panel">
+                  <h5 class="header2" align="center">Form Input HandPhone</h5>
+                  <div class="row">
+                    <form class="col s12" id='frmUtama'>
+                      <div class="row">
+                        <div class="input-field col s12">
+                         
+                          <input id="id" name="id" type="number" maxlength="7" required>
+                          <label for="nim">ID HANDPHONE</label>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="input-field col s12">
+                          
+                          <input id="nama" name="nama" type="text" maxlength="50" required>
+                          <label for="nama">NAMA</label>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="input-field col s12">
+                          
+                          <input id="type" name="type" type="text" required>
+                          <label for="type">TYPE</label>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="input-field col s12">
+                          <input id="harga" name="harga" type="number" required>
+                          <label for="harga">HARGA</label>
+                        </div>
+                        <div class="row">
+                          <div class="input-field col s12">
+                              <button class="btn cyan waves-effect waves-light right" id='btnTambah' type="submit" value="Tambah">Tambah</button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="col s12 m12 l7">
+                  <div class="card-panel">
+                  <table class="hoverable">
+                        <thead>
+                            <tr>
+                                <th>ID HANDPHONE</th>
+                                <th>Nama</th>
+                                <th>Type</th>
+                                <th>Harga</th>
+                                <th></th>
+                            </tr>         
+                        </thead>
+                        <tbody id="tabel">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+       </div>
+       <div id='pesan'> </div>
+      </div>
+    </div>
+    <script>
+        var tabel = document.getElementById('tabel'),
+            id = document.getElementById('id'),
+            nama = document.getElementById('nama'),
+            type = document.getElementById('type'),
+            btnTambah = document.getElementById('btnTambah'),
+            form = document.getElementById('frmUtama'),
+            pesan = document.getElementById('pesan'),
+            harga = document.getElementById('harga'),
+            db;         
+ 
+        function tambahBaris(e) {
+            // Periksa apakah id sudah ada
+            if (tabel.rows.namedItem(id.value)) {
+                pesan.textContent = 'Error: id sudah terdaftar!';
+                e.preventDefault();
+                return;
+            }
+	
+			
+            // Tambah ke database
+            tambahKeDatabase({
+                id: id.value,
+                nama: nama.value,
+                type: type.value,
+                harga: harga.value
+            });
+ 
+            // Membuat baris baru
+            var baris = tabel.insertRow();
+            baris.id = id.value;
+            baris.insertCell().appendChild(document.createTextNode(id.value));
+            baris.insertCell().appendChild(document.createTextNode(nama.value));
+            baris.insertCell().appendChild(document.createTextNode(type.value));
+            baris.insertCell().appendChild(document.createTextNode(harga.value));
+ 
+            // Membuat tombol hapus untuk setiap baris
+            var btnHapus = document.createElement('input');
+            btnHapus.type = 'button';
+            btnHapus.value = 'Hapus';
+            btnHapus.id = id.value;            
+            baris.insertCell().appendChild(btnHapus);
+ 
+            e.preventDefault();
+        }               
+ 
+        function hapusBaris(e) {
+            if (e.target.type=='button') {                
+                tabel.deleteRow(tabel.rows.namedItem(e.target.id).sectionRowIndex);
+                hapusDariDatabase(e.target.id);
+            }
+        }
+ 
+        form.addEventListener('submit', tambahBaris, false);                  
+        tabel.addEventListener('click', hapusBaris, true);            
+        function kesalahanHandler(e) {
+        pesan.innerHTML += 'Kesalahan Database: ' + e.target.errorCode + '<br>';      
+        }
+    
+        function buatDatabase() {
+            var request = window.indexedDB.open('elektronika', 1);
+            request.onerror = kesalahanHandler;
+            request.onupgradeneeded = function(e) {             
+                var db = e.target.result;
+                db.onerror = kesalahanHandler;                          
+                var objectstore = db.createObjectStore('produk', { keyPath: 'id' });
+                pesan.innerHTML += 'Object store produk berhasil dibuat.<br>';
+            }
+            request.onsuccess = function(e) {           
+                db = e.target.result;
+                db.onerror = kesalahanHandler;                          
+                pesan.innerHTML += 'Berhasil melakukan koneksi ke database!<br>';
+                bacaDariDatabase();
+            }
+        }
+
+        buatDatabase();
+        
+        function cetakPesanHandler(msg) {
+            return function(e) {
+                pesan.innerHTML += msg + '<br>';
+            }
+        }
+ 
+        function buatTransaksi() {
+            var transaction = db.transaction(['produk'], 'readwrite');
+            transaction.onerror = kesalahanHandler;
+            transaction.oncomplete = cetakPesanHandler('Transaksi baru saja diselesaikan.');                  
+            return transaction;
+        }
+
+        function tambahKeDatabase(produk) {      
+            var objectstore = buatTransaksi().objectStore('produk');
+            var request = objectstore.add(produk);
+            request.onerror = kesalahanHandler;
+            request.onsuccess = cetakPesanHandler('produk [' + produk.id + '] telah ditambahkan ke database lokal.');            
+        }
+        
+        // Menampilkan dari database
+        function bacaDariDatabase() {
+            var objectstore = buatTransaksi().objectStore('produk');
+            objectstore.openCursor().onsuccess = function(e) {
+                var result = e.target.result;
+                if (result) {
+                    pesan.innerHTML += 'Membaca produk [' + result.value.id + '] dari database.<br>';
+                    var baris = tabel.insertRow();                  
+                    baris.id = result.value.id;
+                    baris.insertCell().appendChild(document.createTextNode(result.value.id));
+                    baris.insertCell().appendChild(document.createTextNode(result.value.nama));
+                    baris.insertCell().appendChild(document.createTextNode(result.value.type));
+                    baris.insertCell().appendChild(document.createTextNode(result.value.harga));
+                    var btnHapus = document.createElement('input');
+                    btnHapus.type = 'button';
+                    btnHapus.value = 'Hapus';
+                    btnHapus.id = result.value.id;         
+                    baris.insertCell().appendChild(btnHapus);
+                    result.continue();
+                }
+            }   
+        }
+        
+        // Hapus dari database
+        function hapusDariDatabase(id) {
+            var objectstore = buatTransaksi().objectStore('produk');
+            var request = objectstore.delete(id);
+            request.onerror = kesalahanHandler;
+            request.onsuccess = cetakPesanHandler('produk [' + id + '] berhasil dihapus dari database lokal.');
+        }
+		
+		
+    </script>
+ 
+</body>
+</html>
