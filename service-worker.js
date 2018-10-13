@@ -41,9 +41,7 @@
 		return fetch(url)
 		.then(function(response) {
 		// Check if we received a valid response
-		if (!response.ok) {
-		throw Error(response.statusText);
-		}
+		
 		return caches.open(CACHE_NAME)
 		.then(function(cache) {
 		cache.put(url, response.clone());
