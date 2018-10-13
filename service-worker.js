@@ -50,9 +50,6 @@
 		return response;
 		});
 		})
-		.catch(function(error) {
-		console.log('Request failed:', error);
-		// You could return a custom offline 404 page here
-		});
+		
 		}
 })();
